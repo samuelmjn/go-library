@@ -177,10 +177,10 @@ func (r *bookRepo) FindMostIssued() (book *model.Book, err error) {
 
 func (r *bookRepo) Delete(id int64) (err error) {
 	tx := r.db.Begin()
-	err = tx.Find("id = ?", id).Delete(&model.Book{}).Error
+	err = tx.Where("id = ?", id).Delete(&model.Book{}).Error
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	return
+	return tx.Commit().Error
 }
