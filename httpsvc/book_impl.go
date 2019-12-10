@@ -33,6 +33,9 @@ func (s *Service) issueBook(c echo.Context) (err error) {
 
 	err = s.bookRepository.Issue(issue)
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return c.String(http.StatusNotFound, "book not found or being issued")
+		}
 		log.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
