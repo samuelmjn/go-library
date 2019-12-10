@@ -1,0 +1,2 @@
+dsn: "postgresql://nainggolan@localhost:5432/gci_book?sslmode=disable"
+port: "5500"

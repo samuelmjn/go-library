@@ -3,6 +3,8 @@ package repository
 import (
 	"log"
 
+	"github.com/samuelmjn/go-library/utils"
+
 	"github.com/jinzhu/gorm"
 	"github.com/samuelmjn/go-library/repository/model"
 )
@@ -25,6 +27,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepo) Create(req *model.User) (err error) {
+	req.ID = utils.GenerateID()
 	tx := r.db.Begin()
 	err = tx.Create(&req).Error
 	if err != nil {
@@ -37,10 +40,13 @@ func (r *userRepo) Create(req *model.User) (err error) {
 }
 
 func (r *userRepo) FindByID(id int64) (user *model.User, err error) {
-	err = r.db.Where("id = ?", id).Take(&user).Error
+	var res model.User
+	err = r.db.Where("id = ?", id).Take(&res).Error
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+
+	user = &res
 	return
 }

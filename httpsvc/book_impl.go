@@ -26,18 +26,18 @@ func (s *Service) createBook(c echo.Context) (err error) {
 }
 
 func (s *Service) issueBook(c echo.Context) (err error) {
-	book := new(model.Book)
-	if err = c.Bind(book); err != nil {
+	issue := new(model.Issue)
+	if err = c.Bind(issue); err != nil {
 		return
 	}
 
-	err = s.bookRepository.Create(book)
+	err = s.bookRepository.Issue(issue)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	return c.JSON(http.StatusOK, book)
+	return c.JSON(http.StatusOK, issue)
 }
 
 func (s *Service) findBookByID(c echo.Context) (err error) {
@@ -54,7 +54,7 @@ func (s *Service) findBookByID(c echo.Context) (err error) {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	issue, err := s.bookRepository.FindIssueByBookID(int64(bookID))
+	issue, err := s.bookRepository.FindCurrentIssueByBookID(int64(bookID))
 	if err != nil && err != gorm.ErrRecordNotFound {
 		log.Println(err)
 
@@ -66,7 +66,7 @@ func (s *Service) findBookByID(c echo.Context) (err error) {
 		if err != nil {
 			log.Println(err)
 			if err == gorm.ErrRecordNotFound {
-				return c.String(http.StatusNotFound, "book not found")
+				return c.String(http.StatusNotFound, "user not found")
 			}
 
 			return c.String(http.StatusBadRequest, err.Error())
@@ -105,12 +105,12 @@ func (s *Service) deleteBook(c echo.Context) (err error) {
 }
 
 func (s *Service) unissueBook(c echo.Context) (err error) {
-	bookID, _ := strconv.Atoi(c.Param("book_id"))
-	err = s.bookRepository.Unissue(int64(bookID))
+	issueID, _ := strconv.Atoi(c.Param("issue_id"))
+	err = s.bookRepository.Unissue(int64(issueID))
 	if err != nil {
 		log.Println(err)
 		if err == gorm.ErrRecordNotFound {
-			return c.String(http.StatusNotFound, "book not found")
+			return c.String(http.StatusNotFound, "issue not found")
 		}
 
 		return c.String(http.StatusBadRequest, err.Error())
