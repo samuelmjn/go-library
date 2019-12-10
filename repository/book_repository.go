@@ -9,11 +9,13 @@ import (
 
 // BookRepository :nodoc:
 type BookRepository interface {
-	Create(req model.Book) error
-	Issue(req model.Issue) (err error)
-	FindByID(id string) (book *model.Book, err error)
+	Create(req *model.Book) error
+	Unissue(bookID int64) (err error)
+	Issue(req *model.Issue) (err error)
+	FindByID(id int64) (book *model.Book, err error)
+	FindIssueByBookID(bookID int64) (issue *model.Issue, err error)
 	FindMostIssued() (book *model.Book, err error)
-	Delete(id string) error
+	Delete(id int64) error
 }
 
 type bookRepo struct {
@@ -27,7 +29,7 @@ func NewBookRepository(db *gorm.DB) BookRepository {
 	}
 }
 
-func (r *bookRepo) Create(req model.Book) (err error) {
+func (r *bookRepo) Create(req *model.Book) (err error) {
 	tx := r.db.Begin()
 	err = tx.Create(&req).Error
 	if err != nil {
@@ -39,7 +41,7 @@ func (r *bookRepo) Create(req model.Book) (err error) {
 	return tx.Commit().Error
 }
 
-func (r *bookRepo) Issue(req model.Issue) (err error) {
+func (r *bookRepo) Issue(req *model.Issue) (err error) {
 	tx := r.db.Begin()
 	err = tx.Create(&req).Error
 	if err != nil {
@@ -48,8 +50,8 @@ func (r *bookRepo) Issue(req model.Issue) (err error) {
 		return err
 	}
 
-	var book *model.Book
-	err = tx.First(book).Error
+	var book model.Book
+	err = tx.Where("id = ?", req.IssuedBook).First(book).Error
 	if err != nil {
 		log.Println(err)
 		tx.Rollback()
@@ -58,6 +60,27 @@ func (r *bookRepo) Issue(req model.Issue) (err error) {
 
 	book.IsIssued = true
 	book.IssueCount++
+	err = tx.Save(&book).Error
+	if err != nil {
+		log.Println(err)
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+func (r *bookRepo) Unissue(bookID int64) (err error) {
+	tx := r.db.Begin()
+	var book model.Book
+	err = tx.Where("id = ?", bookID).First(&book).Error
+	if err != nil {
+		log.Println(err)
+		tx.Rollback()
+		return err
+	}
+
+	book.IsIssued = false
 	err = tx.Save(book).Error
 	if err != nil {
 		log.Println(err)
@@ -68,8 +91,17 @@ func (r *bookRepo) Issue(req model.Issue) (err error) {
 	return tx.Commit().Error
 }
 
-func (r *bookRepo) FindByID(id string) (book *model.Book, err error) {
+func (r *bookRepo) FindByID(id int64) (book *model.Book, err error) {
 	err = r.db.Where("id = ?", id).Take(&book).Error
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return
+}
+
+func (r *bookRepo) FindIssueByBookID(bookID int64) (issue *model.Issue, err error) {
+	err = r.db.Where("issued_book = ?", bookID).Take(&issue).Error
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -90,7 +122,7 @@ func (r *bookRepo) FindMostIssued() (book *model.Book, err error) {
 	return
 }
 
-func (r *bookRepo) Delete(id string) (err error) {
+func (r *bookRepo) Delete(id int64) (err error) {
 	tx := r.db.Begin()
 	err = tx.Where("id = ?", id).Delete(&model.Book{}).Error
 	if err != nil {

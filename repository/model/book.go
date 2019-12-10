@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 // Book :nodoc:
 type Book struct {
 	ID         string `json:"id"`
@@ -12,9 +14,9 @@ type Book struct {
 
 // Issue :nodoc:
 type Issue struct {
-	ID         string `json:"id"`
-	IssuedBook string `json:"issued_book"`
-	StartDate  string `json:"start_date"`
-	FinishDate string `json:"finish_date"`
-	IssuedBy   string `json:"issued_by"`
+	ID         string    `json:"id"`
+	IssuedBook int64     `json:"issued_book"`
+	StartTime  time.Time `json:"start_time"`
+	FinishTime time.Time `json:"finish_time"`
+	IssuedBy   int64     `json:"issued_by"`
 }

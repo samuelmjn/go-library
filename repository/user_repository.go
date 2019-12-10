@@ -9,7 +9,8 @@ import (
 
 // UserRepository :nodoc:
 type UserRepository interface {
-	Create(req model.User) (err error)
+	Create(req *model.User) (err error)
+	FindByID(id int64) (user *model.User, err error)
 }
 
 type userRepo struct {
@@ -23,7 +24,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	}
 }
 
-func (r *userRepo) Create(req model.User) (err error) {
+func (r *userRepo) Create(req *model.User) (err error) {
 	tx := r.db.Begin()
 	err = tx.Create(&req).Error
 	if err != nil {
@@ -35,7 +36,7 @@ func (r *userRepo) Create(req model.User) (err error) {
 	return tx.Commit().Error
 }
 
-func (r *userRepo) FindByID(id string) (user *model.User, err error) {
+func (r *userRepo) FindByID(id int64) (user *model.User, err error) {
 	err = r.db.Where("id = ?", id).Take(&user).Error
 	if err != nil {
 		log.Println(err)
