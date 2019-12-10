@@ -12,6 +12,7 @@ import (
 // BookRepository :nodoc:
 type BookRepository interface {
 	Create(req *model.Book) error
+	FindAllBooks(page int64, size int64) (books *[]model.Book, err error)
 	Unissue(issueID int64) (err error)
 	Issue(req *model.Issue) (err error)
 	FindByID(id int64) (book *model.Book, err error)
@@ -46,6 +47,21 @@ func (r *bookRepo) Create(req *model.Book) (err error) {
 	}
 
 	return tx.Commit().Error
+}
+
+func (r *bookRepo) FindAllBooks(page int64, size int64) (books *[]model.Book, err error) {
+	offset := utils.Offset(page, size)
+
+	var res []model.Book
+	err = r.db.Offset(offset).Limit(size).Find(&res).Error
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	books = &res
+
+	return
 }
 
 func (r *bookRepo) Issue(req *model.Issue) (err error) {

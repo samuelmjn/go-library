@@ -121,3 +121,16 @@ func (s *Service) unissueBook(c echo.Context) (err error) {
 
 	return c.JSON(http.StatusOK, "book unissued succesfuly")
 }
+
+func (s *Service) findAllBooks(c echo.Context) (err error) {
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	size, _ := strconv.Atoi(c.QueryParam("size"))
+	log.Println(page, size)
+	book, err := s.bookRepository.FindAllBooks(int64(page), int64(size))
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, book)
+}

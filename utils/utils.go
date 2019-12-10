@@ -19,3 +19,13 @@ func UseEnvIfExists(keyword string) string {
 	}
 	return keyword
 }
+
+// Offset :nodoc:
+func Offset(page, limit int64) (offset int64) {
+	offset = (page - 1) * limit
+	if offset < 0 {
+		return 0
+	}
+
+	return
+}
