@@ -1,2 +1,2 @@
-dsn: "postgresql://nainggolan@localhost:5432/gci_book?sslmode=disable"
-port: "5500"
+dsn: "$POSTGRESQL_DSN"
+port: "$SERVICE_PORT"
