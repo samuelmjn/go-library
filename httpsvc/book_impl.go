@@ -26,6 +26,7 @@ func (s *Service) createBook(c echo.Context) (err error) {
 }
 
 func (s *Service) issueBook(c echo.Context) (err error) {
+	var resp issueResponse
 	issue := new(model.Issue)
 	if err = c.Bind(issue); err != nil {
 		return
@@ -40,7 +41,16 @@ func (s *Service) issueBook(c echo.Context) (err error) {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	return c.JSON(http.StatusOK, issue)
+	user, err := s.userRepository.FindByID(issue.IssuedBy)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		log.Println(err)
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	resp.Issue = *issue
+	resp.IssuedBy = user
+
+	return c.JSON(http.StatusOK, resp)
 }
 
 func (s *Service) findBookByID(c echo.Context) (err error) {
