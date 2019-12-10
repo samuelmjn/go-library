@@ -61,7 +61,7 @@ func (r *bookRepo) Issue(req *model.Issue) (err error) {
 	}
 
 	var book model.Book
-	err = tx.Where("id = ?", req.IssuedBook).First(&book).Error
+	err = tx.Where("id = ? AND is_issued = ?", req.IssuedBook, false).First(&book).Error
 	if err != nil {
 		log.Println(err)
 		tx.Rollback()
